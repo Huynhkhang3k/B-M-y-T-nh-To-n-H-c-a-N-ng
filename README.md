@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Máy Tính Toán Học - Phiên Bản Nâng Cấp</title>
+  <title>Máy Tính Toán Học & Tam Giác Vuông</title>
   <!-- Import phông chữ Lobster -->
   <link
     href="https://fonts.googleapis.com/css2?family=Lobster&display=swap"
     rel="stylesheet"
   />
-  <!-- Include Nerdamer cho giải phương trình -->
+  <!-- Include Nerdamer cho giải phương trình (Máy Tính Toán Học) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.9/nerdamer.core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.9/Algebra.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/nerdamer/1.1.9/Solve.js"></script>
+
   <style>
     /* ------------------ CSS CHUNG ------------------ */
     * {
@@ -36,7 +37,7 @@
       margin-bottom: 20px;
       color: #5a5a5a;
     }
-    /* Thanh nút duy nhất ở trên cùng (màu xanh) */
+    /* Thanh trên cùng: 1 nút toggleCalcBtn */
     .topBar {
       width: 100%;
       background: linear-gradient(135deg, #4caf50, #66bb6a);
@@ -73,6 +74,7 @@
         transform: translateY(0);
       }
     }
+
     /* ------------------ CSS Máy Tính Toán Học (originalCalc) ------------------ */
     #originalCalc {
       background: rgba(255, 255, 255, 0.85);
@@ -167,6 +169,7 @@
       line-height: 1.6;
       color: #555;
     }
+
     /* ------------------ CSS Máy Tính Tam Giác Vuông (triangleCalc) ------------------ */
     #triangleCalc {
       display: none;
@@ -223,8 +226,7 @@
   </style>
 </head>
 <body>
-
-  <!-- Thanh trên cùng: nút duy nhất thay đổi text tùy máy tính đang hiển thị -->
+  <!-- Thanh trên cùng: 1 nút duy nhất toggleCalcBtn -->
   <div class="topBar">
     <button id="toggleCalcBtn">Chuyển sang Máy Tính Tam Giác Vuông</button>
   </div>
@@ -248,7 +250,7 @@
   <div class="container" id="triangleCalc">
     <h2>Máy Tính Tam Giác Vuông</h2>
     <p style="font-family:'Lobster', cursive;">
-      Nhập ít nhất 2 giá trị. Tam giác được vẽ với góc vuông ở góc dưới bên trái.
+      Nhập ít nhất 2 giá trị (W, L, hoặc cạnh huyền). Tam giác được vẽ với góc vuông ở góc dưới bên trái (V1).
     </p>
     <!-- Nhập các cạnh -->
     <label for="sideB">Cạnh ngang (W):</label>
@@ -289,7 +291,9 @@
   <!-- ----------------- Mã JavaScript ----------------- -->
   <!-- Mã cho Máy Tính Toán Học (originalCalc) -->
   <script>
-    // ---------- CODE MÁY TÍNH TOÁN HỌC (không đổi so với phiên bản trước) ----------
+    /*******************************************************
+     *            CODE CHO MÁY TÍNH TOÁN HỌC
+     *******************************************************/
     let currentMode = "numeric";
     let savedRange = null;
     const expressionDiv = document.getElementById("expression");
@@ -656,6 +660,9 @@
 
   <!-- Mã cho Máy Tính Tam Giác Vuông (triangleCalc) -->
   <script>
+    /*******************************************************
+     *       CODE CHO MÁY TÍNH TAM GIÁC VUÔNG
+     *******************************************************/
     let v1_label = "A",
       v2_label = "B",
       v3_label = "C";
@@ -679,6 +686,7 @@
     checkA.textContent = "✓";
     checkB.textContent = "";
     checkC.textContent = "";
+
     checkA.addEventListener("click", () => {
       // V1 đã là góc vuông, không làm gì
     });
@@ -700,32 +708,77 @@
     });
 
     function calculateTriangle() {
-      let W = parseFloat(document.getElementById("sideB").value);
-      let L = parseFloat(document.getElementById("sideC").value);
-      let hypInput = parseFloat(document.getElementById("sideA").value);
-      if (isNaN(W) || isNaN(L)) {
+      // Đọc 3 giá trị từ input
+      let W = parseFloat(document.getElementById("sideB").value);  // cạnh ngang
+      let L = parseFloat(document.getElementById("sideC").value);  // cạnh dọc
+      let hyp = parseFloat(document.getElementById("sideA").value); // cạnh huyền
+
+      // Kiểm tra số cạnh được nhập
+      let providedW = !isNaN(W);
+      let providedL = !isNaN(L);
+      let providedH = !isNaN(hyp);
+      let countProvided = (providedW ? 1 : 0) + (providedL ? 1 : 0) + (providedH ? 1 : 0);
+
+      // Cần ít nhất 2 giá trị
+      if (countProvided < 2) {
         document.getElementById("triangleResult").innerHTML =
-          "<p>Vui lòng nhập giá trị cho cả cạnh ngang và cạnh dọc.</p>";
+          "<p>Vui lòng nhập ít nhất 2 giá trị (W, L, hoặc cạnh huyền).</p>";
         clearCanvasTriangle();
         return;
       }
-      let computedHyp = Math.sqrt(W * W + L * L);
-      let hyp = isNaN(hypInput) ? computedHyp : computedHyp;
 
-      let angleV2 = Math.atan(L / W) * (180 / Math.PI);
-      let angleV3 = 90 - angleV2;
+      // Nếu chỉ có 2 giá trị => tính giá trị còn lại
+      if (countProvided === 2) {
+        // Thiếu hyp
+        if (!providedH) {
+          hyp = Math.sqrt(W * W + L * L);
+        }
+        // Thiếu W
+        else if (!providedW) {
+          let temp = hyp * hyp - L * L;
+          if (temp < 0) {
+            document.getElementById("triangleResult").innerHTML =
+              "<p>Dữ liệu không hợp lệ: Cạnh huyền phải lớn hơn cạnh dọc.</p>";
+            clearCanvasTriangle();
+            return;
+          }
+          W = Math.sqrt(temp);
+        }
+        // Thiếu L
+        else if (!providedL) {
+          let temp = hyp * hyp - W * W;
+          if (temp < 0) {
+            document.getElementById("triangleResult").innerHTML =
+              "<p>Dữ liệu không hợp lệ: Cạnh huyền phải lớn hơn cạnh ngang.</p>";
+            clearCanvasTriangle();
+            return;
+          }
+          L = Math.sqrt(temp);
+        }
+      } 
+      // Nếu nhập đủ 3 => kiểm tra nhất quán
+      else {
+        let diff = Math.abs(W * W + L * L - hyp * hyp);
+        let eps = 1e-6;
+        if (diff > eps) {
+          document.getElementById("triangleResult").innerHTML =
+            "<p>Dữ liệu không hợp lệ: W² + L² không bằng cạnh huyền².</p>";
+          clearCanvasTriangle();
+          return;
+        }
+      }
 
+      // ----- Tính góc -----
+      let angleV2 = Math.atan(L / W) * 180 / Math.PI; // góc tại V2
+      let angleV3 = 90 - angleV2; // góc tại V3
+
+      // Hiển thị kết quả
       let resHTML = `<p>Góc vuông: ${v1_label} = 90°</p>`;
-      resHTML += `<p>Các góc còn lại: ${v2_label} = ${angleV2.toFixed(
-        2
-      )}°, ${v3_label} = ${angleV3.toFixed(2)}°</p>`;
-      resHTML += `<p>Các cạnh: Huyền (đối ${v1_label}) = ${hyp.toFixed(
-        2
-      )}, Ngang (${v1_label}-${v2_label}) = ${W.toFixed(
-        2
-      )}, Dọc (${v1_label}-${v3_label}) = ${L.toFixed(2)}</p>`;
+      resHTML += `<p>Các góc còn lại: ${v2_label} = ${angleV2.toFixed(2)}°, ${v3_label} = ${angleV3.toFixed(2)}°</p>`;
+      resHTML += `<p>Các cạnh: Huyền (đối ${v1_label}) = ${hyp.toFixed(2)}, Ngang (${v1_label}-${v2_label}) = ${W.toFixed(2)}, Dọc (${v1_label}-${v3_label}) = ${L.toFixed(2)}</p>`;
       document.getElementById("triangleResult").innerHTML = resHTML;
 
+      // Vẽ tam giác
       drawTriangle(W, L);
     }
 
@@ -734,20 +787,26 @@
       const scale = 50;
       let canvas = document.getElementById("triangleCanvas");
       let ctx = canvas.getContext("2d");
+
+      // Tính kích thước canvas
       let width = Math.max(400, margin + W * scale + margin);
       let height = Math.max(400, margin + L * scale + margin);
       canvas.width = width;
       canvas.height = height;
-      document.getElementById("canvasContainer").style.width =
-        width + "px";
-      document.getElementById("canvasContainer").style.height =
-        height + "px";
+      document.getElementById("canvasContainer").style.width = width + "px";
+      document.getElementById("canvasContainer").style.height = height + "px";
+
       ctx.clearRect(0, 0, width, height);
 
+      // Định nghĩa 3 đỉnh vật lý (V1, V2, V3)
+      // V1 (góc vuông) ở (margin, margin + L*scale)
       let V1 = { x: margin, y: margin + L * scale };
+      // V2 ở (margin + W*scale, margin + L*scale)
       let V2 = { x: margin + W * scale, y: margin + L * scale };
+      // V3 ở (margin, margin)
       let V3 = { x: margin, y: margin };
 
+      // Vẽ tam giác
       ctx.beginPath();
       ctx.moveTo(V1.x, V1.y);
       ctx.lineTo(V2.x, V2.y);
@@ -757,6 +816,7 @@
       ctx.strokeStyle = "#333";
       ctx.stroke();
 
+      // Vẽ ký hiệu góc vuông tại V1
       let marker = 20;
       ctx.beginPath();
       ctx.moveTo(V1.x + marker, V1.y);
@@ -764,12 +824,14 @@
       ctx.lineTo(V1.x, V1.y - marker);
       ctx.stroke();
 
+      // Vẽ nhãn đỉnh
       ctx.font = "18px 'Lobster', cursive";
       ctx.fillStyle = "#d32f2f";
       ctx.fillText(v1_label, V1.x - 30, V1.y + 25);
       ctx.fillText(v2_label, V2.x + 10, V2.y + 25);
       ctx.fillText(v3_label, V3.x - 30, V3.y - 10);
 
+      // Ghi chú độ dài (màu xanh)
       ctx.fillStyle = "#1976d2";
       let midV1V2 = { x: (V1.x + V2.x) / 2, y: (V1.y + V2.y) / 2 };
       let midV1V3 = { x: (V1.x + V3.x) / 2, y: (V1.y + V3.y) / 2 };
@@ -784,27 +846,25 @@
       let ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-
-    calculateTriangle();
   </script>
 
-  <!-- Mã chuyển đổi duy nhất ở nút topBar -->
+  <!-- Mã chuyển đổi (nút trên cùng) -->
   <script>
     const originalCalc = document.getElementById("originalCalc");
     const triangleCalc = document.getElementById("triangleCalc");
     const toggleBtn = document.getElementById("toggleCalcBtn");
 
-    // Mặc định đang ở máy tính Toán Học
+    // Mặc định đang hiển thị máy tính Toán Học
     let showingOriginal = true;
 
     toggleBtn.addEventListener("click", () => {
       if (showingOriginal) {
-        // Đang là Toán Học -> chuyển sang Tam Giác
+        // Đang ở Toán Học => chuyển sang Tam Giác
         originalCalc.style.display = "none";
         triangleCalc.style.display = "block";
         toggleBtn.textContent = "Trở về Máy Tính Toán Học";
       } else {
-        // Đang là Tam Giác -> quay lại Toán Học
+        // Đang ở Tam Giác => quay lại Toán Học
         triangleCalc.style.display = "none";
         originalCalc.style.display = "block";
         toggleBtn.textContent = "Chuyển sang Máy Tính Tam Giác Vuông";
